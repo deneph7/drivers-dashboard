@@ -45,10 +45,19 @@
     │   ├── layout.tsx
     │   ├── page.tsx                    # → /login 리다이렉트
     │   ├── login/page.tsx
-    │   ├── dashboard/page.tsx
-    │   ├── driver/page.tsx
-    │   ├── admin/page.tsx
-    │   ├── admin/driver/[id]/page.tsx
+    │   ├── dashboard/
+    │   │   ├── page.tsx
+    │   │   └── loading.tsx
+    │   ├── driver/
+    │   │   ├── page.tsx              # 레거시 (대시보드 모달로 대체)
+    │   │   └── loading.tsx
+    │   ├── admin/
+    │   │   ├── page.tsx
+    │   │   ├── loading.tsx
+    │   │   └── driver/[id]/page.tsx  # 레거시 (대시보드 모달로 대체)
+    │   ├── login/
+    │   │   ├── page.tsx
+    │   │   └── loading.tsx
     │   └── api/
     │       ├── drivers/route.ts
     │       └── users/route.ts
@@ -57,6 +66,8 @@
     │   ├── DriverCard.tsx
     │   ├── Clock.tsx
     │   ├── StatusSelector.tsx
+    │   ├── StatusModal.tsx            # 대시보드 카드 클릭 시 상태변경 모달
+    │   ├── NavigationProgress.tsx     # 페이지 전환 로딩 오버레이
     │   ├── VehicleInput.tsx
     │   └── DelayBadge.tsx
     ├── lib/
@@ -115,13 +126,16 @@
 - `/admin/*` → admin만 접근, 그 외 → `/dashboard` 리다이렉트
 - `/driver` → driver만 접근, 그 외 → `/dashboard` 리다이렉트
 - `/dashboard` → 모든 인증 사용자 접근 가능
-- `/login` → 미인증 사용자만 접근 (인증 시 역할별 리다이렉트)
+- `/login` → 미인증 사용자만 접근 (인증 시 `/dashboard` 리다이렉트)
 - 루트 `/` → `/login` 리다이렉트
 
 ### 로그인 후 라우팅
-- admin → `/dashboard`
-- driver → `/driver`
-- viewer → `/dashboard`
+- **모든 역할** → `/dashboard` (대시보드가 기본 화면)
+
+### 상태 변경 방식
+- driver: 대시보드에서 본인 카드 클릭 → 모달(StatusModal)로 상태 변경
+- admin: 대시보드에서 아무 기사 카드 클릭 → 모달(StatusModal)로 상태 변경
+- viewer: 카드 클릭 불가 (조회만)
 
 ### RLS 정책 요약
 - `driver_status`: 인증 사용자 전체 SELECT / driver 본인 UPDATE / admin 전체 UPDATE
@@ -146,9 +160,11 @@
 | contact (연락필요) | `'contact'` | 회색 `#6B7280` (gray-500) |
 
 ### UX 원칙
-- 상태 버튼 탭 즉시 저장 (확인 단계 없음) — 빨간불만 2단계 (복귀시간 입력 필수)
+- 대시보드 카드 클릭 → 슬라이드업 모달로 상태 변경 (별도 페이지 이동 없음)
+- 빨간불(불가용) 시 복귀시간 필수, 현재 시간 이전 입력 불가
 - 모바일 터치 친화적 버튼 크기 (최소 44px)
 - 복귀 지연 시 카드에 빨간 깜빡임 애니메이션 + 경고 배지
+- 페이지 전환 시 로딩 오버레이 표시 (loading.tsx + LoadingOverlay)
 
 ---
 
@@ -168,11 +184,10 @@
 2. DB 스키마 + RLS 정책 적용 (Supabase SQL 에디터에서 실행)
 3. 시드 스크립트로 최초 admin 계정 생성
 4. 인증 구현 (로그인 페이지, 미들웨어, 역할 라우팅)
-5. `/driver` 기사 상태 입력 화면
-6. `/dashboard` 대시보드 화면 (정적)
-7. Supabase Realtime 연동
-8. 복귀 지연 감지 (클라이언트 타이머)
-9. `/admin` 관리자 화면 + `/admin/driver/[id]` 대리 변경 페이지
+5. `/dashboard` 대시보드 화면 + 카드 클릭 상태변경 모달
+6. Supabase Realtime 연동
+7. 복귀 지연 감지 (클라이언트 타이머)
+8. `/admin` 관리자 화면 (사용자 관리)
 10. i18n 구현 (영어 기본, 한/영 토글)
 11. GitHub Actions keepalive cron 설정 확인
 12. 반응형 UI 조정 + 디자인 다듬기
@@ -191,8 +206,8 @@
 - [ ] 복귀 지연 경고 표시 동작
 
 ### 최종 전체 테스트
-- [ ] admin 로그인 → 대시보드 → 기사 대리 변경
-- [ ] driver 로그인 → 상태 입력 → 대시보드에 반영
+- [ ] admin 로그인 → 대시보드 → 카드 클릭 → 모달로 기사 대리 변경
+- [ ] driver 로그인 → 대시보드 → 본인 카드 클릭 → 모달로 상태 변경 → 대시보드에 반영
 - [ ] viewer 로그인 → 대시보드 조회만 (변경 불가)
 - [ ] 빨간불 → 복귀 예정시간 경과 → 지연 경고 표시
 - [ ] 차량번호 자동완성 (recent_vehicles)

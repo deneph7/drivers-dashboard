@@ -15,14 +15,12 @@
 | 기능 | admin | driver | viewer |
 |------|:-----:|:------:|:------:|
 | 대시보드 조회 (`/dashboard`) | ✅ | ✅ | ✅ |
-| 본인 상태 변경 (`/driver`) | ✅* | ✅ | ❌ |
-| 전체 기사 상태 대리 변경 (`/admin/driver/[id]`) | ✅ | ❌ | ❌ |
+| 본인 상태 변경 (대시보드 카드 클릭 → 모달) | ✅ | ✅ | ❌ |
+| 전체 기사 상태 대리 변경 (대시보드 카드 클릭 → 모달) | ✅ | ❌ | ❌ |
 | 사용자 계정 생성/삭제 | ✅ | ❌ | ❌ |
 | 사용자 프로필 편집 (이니셜, sort_order) | ✅ | ❌ | ❌ |
 | 비밀번호 초기화 | ✅ | ❌ | ❌ |
 | 사이트 언어 설정 | ✅ | ❌ | ❌ |
-
-> *admin도 driver 역할처럼 본인 상태를 변경할 수 있지만, `/driver` 페이지는 driver만 접근. admin은 `/admin/driver/[id]`로 접근.
 
 ---
 
@@ -31,11 +29,11 @@
 | 경로 | 접근 가능 역할 | 미인증 시 |
 |------|--------------|---------|
 | `/` | 전체 | `/login` 리다이렉트 |
-| `/login` | 미인증만 | 역할별 홈으로 리다이렉트 |
+| `/login` | 미인증만 | `/dashboard` 리다이렉트 |
 | `/dashboard` | 모든 인증 사용자 | `/login` 리다이렉트 |
-| `/driver` | driver | `/dashboard` 리다이렉트 |
+| `/driver` | driver | `/dashboard` 리다이렉트 (레거시) |
 | `/admin` | admin | `/dashboard` 리다이렉트 |
-| `/admin/driver/[id]` | admin | `/dashboard` 리다이렉트 |
+| `/admin/driver/[id]` | admin | `/dashboard` 리다이렉트 (레거시) |
 
 ---
 
@@ -44,8 +42,10 @@
 | 역할 | 로그인 직후 이동 경로 |
 |------|-------------------|
 | admin | `/dashboard` |
-| driver | `/driver` |
+| driver | `/dashboard` |
 | viewer | `/dashboard` |
+
+> 모든 역할이 `/dashboard`로 이동. driver는 대시보드에서 본인 카드를 클릭하여 상태 변경.
 
 ---
 
@@ -75,6 +75,8 @@
 
 | 역할 | 카드 클릭 시 |
 |------|-----------|
-| admin | `/admin/driver/[id]` 편집 페이지로 이동 |
-| driver | 동작 없음 (조회만) |
+| admin | 모든 카드 클릭 가능 → StatusModal 모달로 상태 대리 변경 |
+| driver | 본인 카드만 클릭 가능 → StatusModal 모달로 상태 변경 |
 | viewer | 동작 없음 (조회만) |
+
+> 클릭 가능한 카드에는 편집 아이콘(연필)이 표시되어 시각적으로 구분됨.
