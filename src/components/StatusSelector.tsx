@@ -43,18 +43,18 @@ export function StatusSelector({ driverData, currentUserId }: Props) {
 
     try {
       const updateData = {
-        driver_id: driverData.driver_id,
         status,
         vehicle_number: vehicleNumber.trim() || null,
         return_time: status === 'unavailable' ? kstInputToUTC(returnTime) : null,
         updated_by: currentUserId,
       }
 
-      const { error: upsertError } = await supabase
+      const { error: updateError } = await supabase
         .from('driver_status')
-        .upsert(updateData, { onConflict: 'driver_id' })
+        .update(updateData)
+        .eq('driver_id', driverData.driver_id)
 
-      if (upsertError) throw upsertError
+      if (updateError) throw updateError
 
       // recent_vehicles 업데이트
       if (vehicleNumber.trim()) {
