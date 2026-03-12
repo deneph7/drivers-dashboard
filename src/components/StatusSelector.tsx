@@ -135,7 +135,7 @@ export function StatusSelector({ driverData, currentUserId, onSaved }: Props) {
             type="datetime-local"
             value={returnTime}
             onChange={(e) => setReturnTime(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
         </div>
       )}

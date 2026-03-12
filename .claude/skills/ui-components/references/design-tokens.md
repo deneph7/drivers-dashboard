@@ -93,6 +93,16 @@
 위험 액션: bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2
 ```
 
+### 입력 필드 (Input)
+
+```
+공통: w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400
+포커스: focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+비활성: disabled:bg-gray-100 disabled:cursor-not-allowed
+```
+
+> **모바일 가독성**: 입력 텍스트는 반드시 `text-gray-900` (검정)으로 표시. 회색 텍스트는 placeholder에만 사용 (`placeholder:text-gray-400`).
+
 ---
 
 ## 카드 컴포넌트 완성 예시
