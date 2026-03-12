@@ -1,0 +1,30 @@
+name: Supabase Keepalive
+
+# Supabase 무료 티어는 7일 미활동 시 프로젝트 일시정지
+# 5일마다 ping하여 자동 정지 방지
+
+on:
+  schedule:
+    - cron: '0 9 */5 * *'   # 매 5일마다 오전 9시 (UTC) 실행
+  workflow_dispatch:          # 수동 실행 가능
+
+jobs:
+  keepalive:
+    name: Ping Supabase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/profiles?select=id&limit=1")
+
+          echo "HTTP Status: $response"
+
+          if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
+            echo "✅ Supabase ping successful"
+          else
+            echo "❌ Supabase ping failed with status $response"
+            exit 1
+          fi

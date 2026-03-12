@@ -1,0 +1,80 @@
+# 역할별 권한 매트릭스
+
+## 역할 정의
+
+| 역할 | 설명 |
+|------|------|
+| **admin** | 관리자. 전체 기사 상태 대리 변경, 사용자 계정 관리, 설정 변경 |
+| **driver** | 기사. 본인 상태만 변경 가능 |
+| **viewer** | 비서/조회자. 대시보드 조회만 가능 |
+
+---
+
+## 기능별 권한
+
+| 기능 | admin | driver | viewer |
+|------|:-----:|:------:|:------:|
+| 대시보드 조회 (`/dashboard`) | ✅ | ✅ | ✅ |
+| 본인 상태 변경 (`/driver`) | ✅* | ✅ | ❌ |
+| 전체 기사 상태 대리 변경 (`/admin/driver/[id]`) | ✅ | ❌ | ❌ |
+| 사용자 계정 생성/삭제 | ✅ | ❌ | ❌ |
+| 사용자 프로필 편집 (이니셜, sort_order) | ✅ | ❌ | ❌ |
+| 비밀번호 초기화 | ✅ | ❌ | ❌ |
+| 사이트 언어 설정 | ✅ | ❌ | ❌ |
+
+> *admin도 driver 역할처럼 본인 상태를 변경할 수 있지만, `/driver` 페이지는 driver만 접근. admin은 `/admin/driver/[id]`로 접근.
+
+---
+
+## 라우트 접근 제어
+
+| 경로 | 접근 가능 역할 | 미인증 시 |
+|------|--------------|---------|
+| `/` | 전체 | `/login` 리다이렉트 |
+| `/login` | 미인증만 | 역할별 홈으로 리다이렉트 |
+| `/dashboard` | 모든 인증 사용자 | `/login` 리다이렉트 |
+| `/driver` | driver | `/dashboard` 리다이렉트 |
+| `/admin` | admin | `/dashboard` 리다이렉트 |
+| `/admin/driver/[id]` | admin | `/dashboard` 리다이렉트 |
+
+---
+
+## 로그인 후 리다이렉트
+
+| 역할 | 로그인 직후 이동 경로 |
+|------|-------------------|
+| admin | `/dashboard` |
+| driver | `/driver` |
+| viewer | `/dashboard` |
+
+---
+
+## DB 수준 권한 (RLS)
+
+### `profiles` 테이블
+
+| 작업 | 허용 조건 |
+|------|---------|
+| SELECT | 모든 인증 사용자 |
+| INSERT | admin만 |
+| UPDATE | admin만 |
+| DELETE | admin만 |
+
+### `driver_status` 테이블
+
+| 작업 | 허용 조건 |
+|------|---------|
+| SELECT | 모든 인증 사용자 |
+| INSERT | admin만 (트리거는 service role) |
+| UPDATE | driver는 `driver_id = auth.uid()` 조건부 / admin은 전체 |
+| DELETE | 허용하지 않음 (레코드 유지) |
+
+---
+
+## 대시보드 카드 클릭 동작
+
+| 역할 | 카드 클릭 시 |
+|------|-----------|
+| admin | `/admin/driver/[id]` 편집 페이지로 이동 |
+| driver | 동작 없음 (조회만) |
+| viewer | 동작 없음 (조회만) |
