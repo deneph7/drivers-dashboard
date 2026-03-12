@@ -96,12 +96,14 @@
 ### 입력 필드 (Input)
 
 ```
-공통: w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400
+공통: w-full rounded-lg border border-gray-300 px-3 py-2 text-base sm:text-sm text-gray-900 placeholder:text-gray-400
 포커스: focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
 비활성: disabled:bg-gray-100 disabled:cursor-not-allowed
 ```
 
 > **모바일 가독성**: 입력 텍스트는 반드시 `text-gray-900` (검정)으로 표시. 회색 텍스트는 placeholder에만 사용 (`placeholder:text-gray-400`).
+>
+> **모바일 자동 줌 방지**: 입력 필드는 모바일에서 `text-base` (16px), 데스크톱에서 `sm:text-sm` (14px) 사용. iOS Safari는 font-size < 16px인 input에 focus 시 자동 zoom-in하므로, 모바일에서는 반드시 16px 이상 사용. viewport meta에도 `maximum-scale=1` 설정.
 
 ---
 
