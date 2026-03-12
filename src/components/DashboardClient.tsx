@@ -5,17 +5,21 @@ import { createClient } from '@/lib/supabase-client'
 import { DriverCard } from './DriverCard'
 import { Clock } from './Clock'
 import { TrafficLight } from './TrafficLight'
+import { StatusModal } from './StatusModal'
 import type { DriverWithStatus, UserRole } from '@/lib/types'
 
 interface Props {
   initialDrivers: DriverWithStatus[]
   viewerRole: UserRole
   userInitial: string
+  currentUserId: string
   onLogout: () => void
 }
 
-export function DashboardClient({ initialDrivers, viewerRole, userInitial, onLogout }: Props) {
+export function DashboardClient({ initialDrivers, viewerRole, userInitial, currentUserId, onLogout }: Props) {
   const [drivers, setDrivers] = useState<DriverWithStatus[]>(initialDrivers)
+  const [selectedDriver, setSelectedDriver] = useState<DriverWithStatus | null>(null)
+  const [loggingOut, setLoggingOut] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -63,6 +67,21 @@ export function DashboardClient({ initialDrivers, viewerRole, userInitial, onLog
     }
   }, [])
 
+  function handleCardClick(driver: DriverWithStatus) {
+    if (isCardClickable(driver)) {
+      setSelectedDriver(driver)
+    }
+  }
+
+  function isCardClickable(driver: DriverWithStatus) {
+    return viewerRole === 'admin' || (viewerRole === 'driver' && driver.driver_id === currentUserId)
+  }
+
+  function handleLogout() {
+    setLoggingOut(true)
+    onLogout()
+  }
+
   const available = drivers.filter((d) => d.status === 'available').length
   const unavailable = drivers.filter((d) => d.status === 'unavailable').length
   const contact = drivers.filter((d) => d.status === 'contact').length
@@ -77,11 +96,6 @@ export function DashboardClient({ initialDrivers, viewerRole, userInitial, onLog
             <Clock />
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
-            {viewerRole === 'driver' && (
-              <a href="/driver" className="text-sm text-blue-600 hover:underline">
-                My Status
-              </a>
-            )}
             {viewerRole === 'admin' && (
               <a href="/admin" className="text-sm text-blue-600 hover:underline">
                 Admin
@@ -89,10 +103,11 @@ export function DashboardClient({ initialDrivers, viewerRole, userInitial, onLog
             )}
             <span className="text-sm text-gray-500">{userInitial}</span>
             <button
-              onClick={onLogout}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50"
             >
-              Logout
+              {loggingOut ? 'Logging out...' : 'Logout'}
             </button>
           </div>
         </div>
@@ -123,7 +138,8 @@ export function DashboardClient({ initialDrivers, viewerRole, userInitial, onLog
               <DriverCard
                 key={driver.driver_id}
                 driver={driver}
-                viewerRole={viewerRole}
+                clickable={isCardClickable(driver)}
+                onClick={() => handleCardClick(driver)}
               />
             ))}
           </div>
@@ -144,6 +160,15 @@ export function DashboardClient({ initialDrivers, viewerRole, userInitial, onLog
           ))}
         </div>
       </main>
+
+      {/* Status Change Modal */}
+      {selectedDriver && (
+        <StatusModal
+          driver={selectedDriver}
+          currentUserId={currentUserId}
+          onClose={() => setSelectedDriver(null)}
+        />
+      )}
     </div>
   )
 }

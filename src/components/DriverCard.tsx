@@ -1,15 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { TrafficLight } from './TrafficLight'
 import { DelayBadge } from './DelayBadge'
 import { formatKST, isDelayed, getCountdown } from '@/lib/utils'
-import type { DriverWithStatus, UserRole } from '@/lib/types'
+import type { DriverWithStatus } from '@/lib/types'
 
 interface Props {
   driver: DriverWithStatus
-  viewerRole: UserRole
+  clickable?: boolean
+  onClick?: () => void
   delayLabel?: string
   returnTimeLabel?: string
   countdownLabel?: string
@@ -17,12 +17,12 @@ interface Props {
 
 export function DriverCard({
   driver,
-  viewerRole,
+  clickable = false,
+  onClick,
   delayLabel = 'Overdue',
   returnTimeLabel = 'Return time',
   countdownLabel = 'Remaining',
 }: Props) {
-  const router = useRouter()
   const [delayed, setDelayed] = useState(false)
   const [countdown, setCountdown] = useState('')
 
@@ -38,14 +38,12 @@ export function DriverCard({
     return () => clearInterval(timer)
   }, [driver.return_time, driver.status])
 
-  const isClickable = viewerRole === 'admin'
-
   return (
     <div
-      onClick={isClickable ? () => router.push(`/admin/driver/${driver.driver_id}`) : undefined}
+      onClick={clickable ? onClick : undefined}
       className={`
-        bg-white rounded-xl border p-4 shadow-sm transition-shadow
-        ${isClickable ? 'cursor-pointer hover:shadow-md' : ''}
+        bg-white rounded-xl border p-4 shadow-sm transition-all
+        ${clickable ? 'cursor-pointer hover:shadow-md active:scale-[0.98]' : ''}
         ${delayed ? 'border-red-400' : 'border-gray-200'}
       `}
     >
@@ -57,6 +55,11 @@ export function DriverCard({
               {driver.profiles.initial}
             </span>
             {delayed && <DelayBadge label={delayLabel} />}
+            {clickable && (
+              <svg className="w-4 h-4 text-gray-400 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            )}
           </div>
           {driver.vehicle_number && (
             <p className="mt-1 text-sm text-gray-500 truncate">{driver.vehicle_number}</p>

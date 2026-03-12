@@ -63,6 +63,9 @@ export const messages = {
     // Errors
     saveError: 'Failed to save. Please try again.',
     returnTimeRequired: 'Return time is required when status is Unavailable.',
+    returnTimePast: 'Return time must be in the future.',
+    statusUpdated: 'Status updated',
+    changeStatus: 'Change Status',
   },
   ko: {
     // Status
@@ -126,6 +129,9 @@ export const messages = {
     // Errors
     saveError: '저장에 실패했습니다. 다시 시도해주세요.',
     returnTimeRequired: '불가용 상태에서는 복귀 예정시간이 필수입니다.',
+    returnTimePast: '복귀 예정시간은 현재 시간 이후여야 합니다.',
+    statusUpdated: '상태 변경 완료',
+    changeStatus: '상태 변경',
   },
 } as const
 

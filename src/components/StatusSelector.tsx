@@ -18,9 +18,10 @@ const STATUSES: { value: DriverStatusEnum; labelKey: 'available' | 'unavailable'
 interface Props {
   driverData: DriverWithStatus
   currentUserId: string
+  onSaved?: () => void  // modal mode: callback instead of redirect
 }
 
-export function StatusSelector({ driverData, currentUserId }: Props) {
+export function StatusSelector({ driverData, currentUserId, onSaved }: Props) {
   const t = useLang()
   const router = useRouter()
   const supabase = createClient()
@@ -38,6 +39,16 @@ export function StatusSelector({ driverData, currentUserId }: Props) {
       setError(t('returnTimeRequired'))
       return
     }
+
+    // Validate return time is in the future
+    if (status === 'unavailable' && returnTime) {
+      const returnUTC = kstInputToUTC(returnTime)
+      if (new Date(returnUTC) <= new Date()) {
+        setError(t('returnTimePast'))
+        return
+      }
+    }
+
     setError('')
     setSaving(true)
 
@@ -68,7 +79,11 @@ export function StatusSelector({ driverData, currentUserId }: Props) {
           .eq('id', driverData.driver_id)
       }
 
-      router.push('/dashboard')
+      if (onSaved) {
+        onSaved()
+      } else {
+        router.push('/dashboard')
+      }
     } catch {
       setError(t('saveError'))
     } finally {

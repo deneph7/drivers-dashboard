@@ -34,16 +34,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // 인증된 사용자가 /login 접근 시 → 역할별 홈으로 리다이렉트
+  // 인증된 사용자가 /login 접근 시 → 대시보드로 리다이렉트
   if (user && pathname === '/login') {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    const redirectTo = profile?.role === 'driver' ? '/driver' : '/dashboard'
-    return NextResponse.redirect(new URL(redirectTo, request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // /admin/* → admin만 접근

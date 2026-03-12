@@ -51,6 +51,7 @@ export default async function DashboardPage() {
       initialDrivers={sorted}
       viewerRole={profile.role}
       userInitial={profile.initial}
+      currentUserId={user.id}
       onLogout={handleLogout}
     />
   )
